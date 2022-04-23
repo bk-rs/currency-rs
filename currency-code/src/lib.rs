@@ -32,14 +32,15 @@ macro_rules! currency_code {
 
         //
         impl ::core::str::FromStr for $name {
-            type Err = ::core::convert::Infallible;
+            type Err = ::alloc::boxed::Box<str>;
 
             fn from_str(s: &str) -> Result<Self, Self::Err> {
                 match s {
                     $(
                         ::core::stringify!($variant) => Ok(Self::$variant),
                     )+
-                    s => Ok(Self::Other(s.into()))
+                    s if s.len() == 3 => Ok(Self::Other(s.into())),
+                    s => Err(::alloc::boxed::Box::<str>::from(alloc::format!("Invalid [{}]", s)))
                 }
             }
         }
@@ -59,7 +60,14 @@ macro_rules! currency_code {
         //
         impl ::core::default::Default for $name {
             fn default() -> Self {
-                Self::Other("".into())
+                Self::Other(Default::default())
+            }
+        }
+
+        //
+        impl ::core::cmp::PartialEq for $name {
+            fn eq(&self, other: &Self) -> bool {
+                ::alloc::format!("{}", self) == ::alloc::format!("{}", other)
             }
         }
 
@@ -68,6 +76,14 @@ macro_rules! currency_code {
         impl_partial_eq_str! { &'a str, $name }
         impl_partial_eq_str! { ::alloc::borrow::Cow<'a, str>, $name }
         impl_partial_eq_str! { ::alloc::string::String, $name }
+
+        //
+        #[cfg(feature = "std")]
+        impl ::std::hash::Hash for $name {
+            fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {
+                ::alloc::format!("{}", self).hash(state);
+            }
+        }
 
         //
         #[cfg(feature = "serde")]

@@ -3,7 +3,7 @@
 use crate::currency_code;
 
 currency_code! {
-    #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    #[derive(Debug, Clone, Eq)]
     pub enum CurrencyCode {
         AED,
         AFN,
@@ -198,6 +198,7 @@ mod tests {
 
     #[test]
     fn test_currency_code() {
+        // Wikipedia
         let mut rdr =
             Reader::from_reader(include_str!("../tests/ISO_4217/Active_codes.csv").as_bytes());
 
@@ -211,5 +212,51 @@ mod tests {
         }
 
         assert_eq!(CurrencyCode::VARS.len(), n);
+
+        // FromStr
+        assert_eq!(
+            "ZZZ".parse::<CurrencyCode>().unwrap(),
+            CurrencyCode::Other("ZZZ".into())
+        );
+        assert_eq!(
+            "x".parse::<CurrencyCode>().err().unwrap(),
+            "Invalid [x]".into()
+        );
+
+        // PartialEq
+        assert_eq!(CurrencyCode::USD, CurrencyCode::USD);
+        assert_eq!(CurrencyCode::USD, CurrencyCode::Other("USD".into()));
+        assert_eq!(CurrencyCode::USD, "USD");
+
+        #[cfg(feature = "std")]
+        {
+            // Hash
+            let mut h = std::collections::HashSet::new();
+            h.insert(CurrencyCode::USD);
+            h.insert(CurrencyCode::Other("USD".into()));
+            assert_eq!(h.len(), 1);
+        }
+
+        #[cfg(feature = "serde")]
+        {
+            #[derive(serde::Serialize, serde::Deserialize)]
+            struct Foo {
+                code: CurrencyCode,
+            }
+
+            assert_eq!(
+                serde_json::from_str::<Foo>(r#"{"code":"USD"}"#)
+                    .unwrap()
+                    .code,
+                CurrencyCode::USD
+            );
+            assert_eq!(
+                serde_json::to_string(&Foo {
+                    code: CurrencyCode::USD
+                })
+                .unwrap(),
+                r#"{"code":"USD"}"#
+            );
+        }
     }
 }
