@@ -220,8 +220,12 @@ mod tests {
         );
         assert_eq!(
             "x".parse::<CurrencyCode>().err().unwrap(),
-            "Invalid [x]".into()
+            crate::error::ParseError::Invalid("x".into())
         );
+        #[cfg(feature = "std")]
+        {
+            std::println!("{}", "x".parse::<CurrencyCode>().err().unwrap());
+        }
 
         // PartialEq
         assert_eq!(CurrencyCode::USD, CurrencyCode::USD);

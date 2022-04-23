@@ -32,7 +32,7 @@ macro_rules! currency_code {
 
         //
         impl ::core::str::FromStr for $name {
-            type Err = ::alloc::boxed::Box<str>;
+            type Err = $crate::error::ParseError;
 
             fn from_str(s: &str) -> Result<Self, Self::Err> {
                 match s {
@@ -40,7 +40,7 @@ macro_rules! currency_code {
                         ::core::stringify!($variant) => Ok(Self::$variant),
                     )+
                     s if s.len() == 3 => Ok(Self::Other(s.into())),
-                    s => Err(::alloc::boxed::Box::<str>::from(alloc::format!("Invalid [{}]", s)))
+                    s => Err($crate::error::ParseError::Invalid(s.into()))
                 }
             }
         }
@@ -126,6 +126,9 @@ macro_rules! impl_partial_eq_str {
         }
     };
 }
+
+//
+pub mod error;
 
 //
 pub mod iso4217;
