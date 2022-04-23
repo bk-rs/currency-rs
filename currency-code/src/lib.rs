@@ -9,13 +9,15 @@ macro_rules! currency_code {
         $( #[$meta:meta] )*
         $pub:vis enum $name:ident {
             $(
+                $( #[$variant_meta:meta] )*
                 $variant:ident,
             )+
         }
     ) => {
-        $(#[$meta])*
+        $( #[$meta] )*
         $pub enum $name {
             $(
+                $( #[$variant_meta] )*
                 $variant,
             )+
             Other(::alloc::boxed::Box<str>),
@@ -25,7 +27,7 @@ macro_rules! currency_code {
         impl $name {
             pub const VARS: &'static [$name] = &[
                 $(
-                    $name::$variant,
+                    Self::$variant,
                 )+
             ];
         }
