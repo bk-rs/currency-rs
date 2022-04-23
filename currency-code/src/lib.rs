@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-extern crate alloc;
+pub extern crate alloc;
 
 //
 #[macro_export]
@@ -20,7 +20,7 @@ macro_rules! currency_code {
                 $( #[$variant_meta] )*
                 $variant,
             )+
-            Other(::alloc::boxed::Box<str>),
+            Other($crate::alloc::boxed::Box<str>),
         }
 
         //
@@ -69,21 +69,36 @@ macro_rules! currency_code {
         //
         impl ::core::cmp::PartialEq for $name {
             fn eq(&self, other: &Self) -> bool {
-                ::alloc::format!("{}", self) == ::alloc::format!("{}", other)
+                $crate::alloc::format!("{}", self) == $crate::alloc::format!("{}", other)
             }
+        }
+
+        impl ::core::cmp::Eq for $name {
+        }
+
+        //
+        macro_rules! impl_partial_eq_str {
+            ($lhs:ty, $rhs:ty) => {
+                #[allow(unused_lifetimes)]
+                impl<'a> ::core::cmp::PartialEq<$lhs> for $rhs {
+                    fn eq(&self, other: &$lhs) -> bool {
+                        ::core::cmp::PartialEq::eq(&$crate::alloc::format!("{}", self)[..], &other[..])
+                    }
+                }
+            };
         }
 
         //
         impl_partial_eq_str! { str, $name }
         impl_partial_eq_str! { &'a str, $name }
-        impl_partial_eq_str! { ::alloc::borrow::Cow<'a, str>, $name }
-        impl_partial_eq_str! { ::alloc::string::String, $name }
+        impl_partial_eq_str! { $crate::alloc::borrow::Cow<'a, str>, $name }
+        impl_partial_eq_str! { $crate::alloc::string::String, $name }
 
         //
         #[cfg(feature = "std")]
         impl ::std::hash::Hash for $name {
             fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {
-                ::alloc::format!("{}", self).hash(state);
+                $crate::alloc::format!("{}", self).hash(state);
             }
         }
 
@@ -96,7 +111,7 @@ macro_rules! currency_code {
             {
                 use ::core::str::FromStr as _;
 
-                let s = ::alloc::boxed::Box::<str>::deserialize(deserializer)?;
+                let s = $crate::alloc::boxed::Box::<str>::deserialize(deserializer)?;
                 Self::from_str(&s).map_err(::serde::de::Error::custom)
             }
         }
@@ -108,22 +123,9 @@ macro_rules! currency_code {
             where
                 S: ::serde::Serializer,
             {
-                use ::alloc::string::ToString as _;
+                use $crate::alloc::string::ToString as _;
 
                 self.to_string().serialize(serializer)
-            }
-        }
-    };
-}
-
-//
-#[macro_export]
-macro_rules! impl_partial_eq_str {
-    ($lhs:ty, $rhs: ty) => {
-        #[allow(unused_lifetimes)]
-        impl<'a> ::core::cmp::PartialEq<$lhs> for $rhs {
-            fn eq(&self, other: &$lhs) -> bool {
-                ::core::cmp::PartialEq::eq(&::alloc::format!("{}", self)[..], &other[..])
             }
         }
     };

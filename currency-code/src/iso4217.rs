@@ -3,7 +3,7 @@
 use crate::currency_code;
 
 currency_code! {
-    #[derive(Debug, Clone, Eq)]
+    #[derive(Debug, Clone)]
     pub enum CurrencyCode {
         AED,
         AFN,
