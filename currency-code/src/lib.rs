@@ -77,22 +77,10 @@ macro_rules! currency_code {
         }
 
         //
-        macro_rules! impl_partial_eq_str {
-            ($lhs:ty, $rhs:ty) => {
-                #[allow(unused_lifetimes)]
-                impl<'a> ::core::cmp::PartialEq<$lhs> for $rhs {
-                    fn eq(&self, other: &$lhs) -> bool {
-                        ::core::cmp::PartialEq::eq(&$crate::alloc::format!("{}", self)[..], &other[..])
-                    }
-                }
-            };
-        }
-
-        //
-        impl_partial_eq_str! { str, $name }
-        impl_partial_eq_str! { &'a str, $name }
-        impl_partial_eq_str! { $crate::alloc::borrow::Cow<'a, str>, $name }
-        impl_partial_eq_str! { $crate::alloc::string::String, $name }
+        impl_macros::impl_partial_eq_str_for_display! { str, $name }
+        impl_macros::impl_partial_eq_str_for_display! { &'a str, $name }
+        impl_macros::impl_partial_eq_str_for_display! { $crate::alloc::borrow::Cow<'a, str>, $name }
+        impl_macros::impl_partial_eq_str_for_display! { $crate::alloc::string::String, $name }
 
         //
         #[cfg(feature = "std")]
