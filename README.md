@@ -9,3 +9,7 @@ cargo fmt -- --check
 cargo build-all-features
 cargo test-all-features -- --nocapture
 ```
+
+## Publish order
+
+currency-code

@@ -21,9 +21,9 @@ std = []
 
 [dependencies]
 impl-macros = { version = "0.1.1", default-features = false, features = ["alloc"] }
-serde = { version = "1.0", default-features = false, features = ["alloc"], optional = true }
+serde = { version = "1", default-features = false, features = ["alloc"], optional = true }
 
 [dev-dependencies]
-csv = { version = "1.1" }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = { version = "1.0" }
+csv = { version = "1" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1" }
